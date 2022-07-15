@@ -1,0 +1,24 @@
+{% extends "pretixcontrol/event/settings_base.html" %}
+{% load i18n %}
+{% load bootstrap3 %}
+{% block inside %}
+    <h1>{% trans "Adyen Cost Estimate" %}</h1>
+        <div class="alert alert-info">
+        {% url "plugins:pretix_adyen_costestimate:estimate" organizer=request.event.organizer.slug event=request.event.slug as surl%}
+        {% blocktrans trimmed with "href='"|add:surl|add:"'"|safe as a_attr %}
+            The cost estimator is available <a {{ a_attr }}>here</a>.
+        {% endblocktrans %}
+    </div>
+
+    <form action="" method="post" class="form-horizontal" enctype="multipart/form-data">
+        {% bootstrap_form_errors form %}
+        {% csrf_token %}
+        {% bootstrap_field form.adyen_estimate_interaction_channel layout="control" %}
+
+        <div class="form-group submit-group">
+            <button type="submit" class="btn btn-primary btn-save">
+                {% trans "Save" %}
+            </button>
+        </div>
+    </form>
+{% endblock %}

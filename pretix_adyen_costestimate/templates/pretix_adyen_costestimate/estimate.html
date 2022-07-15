@@ -1,0 +1,76 @@
+{% extends "pretixpresale/event/base.html" %}
+{% load i18n %}
+{% load money %}
+{% load eventurl %}
+{% load l10n %}
+{% load rich_text %}
+{% load static %}
+{% load compress %}
+{% block title %}{% trans "Cost Estimate" %}{% endblock %}
+{% block custom_header %}
+    <script src="https://checkoutshopper-{{ environment }}.adyen.com/checkoutshopper/sdk/5.14.0/adyen.js"
+        integrity="sha384-JsWtX9H7PkCMYb50ZDb4AdPdVNcPDx/O+aUYtLyLxU3D04jiqFEqnLKMDUIWxBpv"
+        crossorigin="anonymous"></script>
+    <link rel="stylesheet" href="https://checkoutshopper-{{ environment }}.adyen.com/checkoutshopper/sdk/5.14.0/adyen.css"
+         integrity="sha384-Dm1w8jaVOWA8rxpzkxA41DIyw5VlBjpoMTPfAijlfepYGgLKF+hke3NKeU/KTX7t"
+        crossorigin="anonymous" />
+    {% compress js %}
+        <script type="text/javascript" src="{% static "pretix_adyen_costestimate/pretix-adyen-costestimate.js" %}"></script>
+    {% endcompress %}
+    <script type="text/plain" id="adyen_environment">{{ environment }}</script>
+    <script type="text/plain" id="adyen_clientKey">{{ clientKey }}</script>
+{% endblock %}
+{% block content %}
+    <p>
+        {% blocktrans trimmed %}
+            Using this tool, you can estimate how much a transaction would cost - approximately - to process through
+            our payment provider, Adyen.
+        {% endblocktrans %}
+    </p>
+    <p>
+        {% blocktrans trimmed with channel=event.settings.adyen_estimate_interaction_channel %}
+            When doing the estimate, we are assuming processing though the {{ channel }} channel.
+        {% endblocktrans %}
+    </p>
+    <p>
+        {% blocktrans trimmed %}
+            To use this tool, please enter the amount of the transaction as well as the card number which you are
+            planning on using for the payment. Your raw card information will never touch our servers directly and is
+            encrypted directly by the payment provider - we will only receive a tokenized version which will be used
+            to perform the pricing lookup.
+        {% endblocktrans %}
+    </p>
+    <form action="" method="post" class="form-horizontal" enctype="multipart/form-data">
+        {% csrf_token %}
+        <div class="form-group" role="group" >
+            <label class="col-md-3 control-label" id="legend-price">Transaction amount</label>
+            <div class="col-md-9">
+                <div class="price-form-group">
+                    <div class="input-group input-group-price">
+                        <label class="sr-only" for="price">Set price in {{ event.currency }} for estimate</label>
+                        <span class="input-group-addon" aria-hidden="true">{{ event.currency }}</span>
+                        <input type="number" class="form-control input-item-price" placeholder="0" id="price" min="0.00"
+                               name="price" title="Modify price for estimate" value="5.00" step="any">
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="form-group" role="group" >
+            <label class="col-md-3 control-label" id="legend-carddata">Card Data</label>
+            <div class="col-md-9">
+                <div class="carddata-form-group">
+                    <div id="card-container"></div>
+                </div>
+            </div>
+        </div>
+        <input type="hidden" name="encrypted_carddata" value="" id="encrypted_carddata"/>
+    </form>
+
+    {% if estimate and amount %}
+        <div class="alert alert-info">
+            {% blocktrans trimmed with currency=event.currency %}
+                A transaction of {{ amount }} {{ currency }} would probably cost around {{ estimate }} {{ currency }} to process.
+            {% endblocktrans %}
+        </div>
+    {% endif %}
+{% endblock %}

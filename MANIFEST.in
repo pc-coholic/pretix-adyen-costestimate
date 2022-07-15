@@ -1,0 +1,5 @@
+recursive-include pretix_adyen_costestimate/static *
+recursive-include pretix_adyen_costestimate/templates *
+recursive-include pretix_adyen_costestimate/locale *
+include LICENSE
+exclude .gitlab-ci.yml
